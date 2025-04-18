@@ -33,25 +33,21 @@ jobs:
             -t boschvn/sdv-runtime:${{ steps.vars.outputs.VERSION }} .
         continue-on-error: true
 
-      - name: Check Docker credentials exist
-        id: check-creds
+      - name: Log in to DockerHub (optional)
+        id: login
+        if: steps.build.outcome == 'success'
+        continue-on-error: true
         run: |
-          if [[ -n "${{ secrets.DOCKER_USERNAME }}" && -n "${{ secrets.DOCKER_PASSWORD }}" ]]; then
-            echo "creds=true" >> $GITHUB_OUTPUT
+          if [ -n "${{ secrets.DOCKER_USERNAME }}" ] && [ -n "${{ secrets.DOCKER_PASSWORD }}" ]; then
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+            echo "logged_in=true" >> $GITHUB_OUTPUT
           else
-            echo "creds=false" >> $GITHUB_OUTPUT
+            echo "DockerHub credentials not set. Skipping login."
+            echo "logged_in=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Log in to DockerHub (optional)
-        uses: docker/login-action@v3
-        if: steps.build.outcome == 'success' && steps.check-creds.outputs.creds == 'true'
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-        continue-on-error: true
-
       - name: Push image to Docker Hub
-        if: steps.build.outcome == 'success'
+        if: steps.build.outcome == 'success' && steps.login.outputs.logged_in == 'true'
         run: |
           docker load -i image.tar
           docker push boschvn/sdv-runtime:${{ steps.vars.outputs.VERSION }}
