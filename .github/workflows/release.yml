@@ -35,9 +35,9 @@ jobs:
 
       - name: Log in to DockerHub
         id: login
-        if: steps.build.outcome == 'success'
-        continue-on-error: true
+        if: steps.build.outcome == 'success' && secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != ''
         uses: docker/login-action@v3
+        continue-on-error: true
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
