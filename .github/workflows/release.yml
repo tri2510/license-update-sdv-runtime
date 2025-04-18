@@ -33,10 +33,12 @@ jobs:
             -t boschvn/sdv-runtime:${{ steps.vars.outputs.VERSION }} .
         continue-on-error: true
 
-      - name: Check Docker credentials exist
+      - name: Check if Docker credentials are set
         id: check-creds
         run: |
-          if [[ -n "${{ secrets.DOCKER_USERNAME }}" && -n "${{ secrets.DOCKER_PASSWORD }}" ]]; then
+          echo "DOCKER_USERNAME='${{ secrets.DOCKER_USERNAME }}'"
+          echo "DOCKER_PASSWORD='${{ secrets.DOCKER_PASSWORD }}'"
+          if [ -n "${{ secrets.DOCKER_USERNAME }}" ] && [ -n "${{ secrets.DOCKER_PASSWORD }}" ]; then
             echo "creds=true" >> $GITHUB_OUTPUT
           else
             echo "creds=false" >> $GITHUB_OUTPUT
