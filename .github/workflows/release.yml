@@ -27,17 +27,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Load TAG from .env
-        run: source .env && echo "TAG=$TAG" >> $GITHUB_ENV
+      - name: Set TAG variable
+        run: |
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          GIT_TAG=${GITHUB_REF#refs/tags/}
+          TAG="${SHORT_SHA}-${GIT_TAG}"
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "Tag to use: $TAG"
 
       - name: Build only services with build context
         run: |
           echo "🔧 Building with tag: $TAG"
-          docker compose --env-file .env -f docker-compose.yml -f docker-compose.dev.yml build runtime-sdv
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml build runtime-sdv
 
       - name: Tag image for GHCR
         run: |
-          IMAGE_ID=$(docker compose --env-file .env -f docker-compose.yml -f docker-compose.dev.yml images -q runtime-sdv)
+          IMAGE_ID=$(docker compose -f docker-compose.yml -f docker-compose.dev.yml images -q runtime-sdv)
           docker tag $IMAGE_ID ghcr.io/${{ github.repository_owner }}/runtime-sdv:$TAG
 
       - name: Push image to GitHub Container Registry
