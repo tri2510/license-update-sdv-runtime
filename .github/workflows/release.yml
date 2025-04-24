@@ -28,11 +28,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Load TAG from .env
-        run: |
-          set -a
-          source .env
-          set +a
-          echo "TAG=$TAG" >> $GITHUB_ENV
+        run: source .env && echo "TAG=$TAG" >> $GITHUB_ENV
 
       - name: Build only services with build context
         run: |
