@@ -31,9 +31,8 @@ jobs:
       - name: Set TAG variable
         id: vars
         run: |
-          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
           GIT_TAG=${GITHUB_REF#refs/tags/}
-          TAG="${SHORT_SHA}-${GIT_TAG}"
+          TAG="${GIT_TAG}"
           echo "TAG=$TAG" >> $GITHUB_ENV
           echo "TAG=$TAG"  # output for debug
           echo "::set-output name=TAG::$TAG"  # deprecated but kept for backward compatibility
