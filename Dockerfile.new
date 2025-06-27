@@ -59,7 +59,9 @@ RUN git clone --recurse-submodules --depth 1 --branch v4.0 https://github.com/CO
     && cd vehicle_signal_specification/ \
     && rm -rf .git \
     && cd vss-tools/ \
-    && python3 -m vss_tools.vspec2json -I ../spec -u ../spec/units.yaml ../spec/VehicleSignalSpecification.vspec vss.json
+    && pip3 install --no-deps --target /home/dev/python-packages . \
+    && cd /build/vehicle_signal_specification/vss-tools/ \
+    && python3 vspec2json.py -I ../spec -u ../spec/units.yaml ../spec/VehicleSignalSpecification.vspec vss.json
 
 # Clone and setup vehicle-model-generator
 RUN git clone --depth 1 --branch v0.7.2 https://github.com/eclipse-velocitas/vehicle-model-generator.git \
