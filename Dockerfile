@@ -86,6 +86,7 @@ COPY --from=python-builder --chown=dev:sdvr /home/dev/python-packages /home/dev/
 # Copy other necessary files
 COPY --chown=dev:sdvr --chmod=0755 data/vss-core/vss.json /home/dev/ws/vss.json
 COPY --chown=dev:sdvr --chmod=0755 data/vss-core/default_vss.json /home/dev/ws/default_vss.json
+COPY requirements.txt .
 COPY --chown=dev:sdvr --chmod=0755 kuksa-syncer /home/dev/ws/kuksa-syncer/
 COPY --chown=dev:sdvr --chmod=0755 mock /home/dev/ws/mock/
 COPY mosquitto-no-auth.conf /etc/mosquitto/mosquitto-no-auth.conf
@@ -100,19 +101,24 @@ RUN pip3 install requests
 # Create symlinks and move files as in original
 RUN ln -s /home/dev/python-packages/velocitas_sdk /home/dev/python-packages/sdv \
     && mv /home/dev/ws/kuksa-syncer/vehicle_model_manager.py /home/dev/ws/kuksa-syncer/pkg_manager.py /home/dev/python-packages/
+    #&& python -m py_compile /home/dev/ws/kuksa-syncer/syncer.py \
+    #&& mv /home/dev/ws/kuksa-syncer/__pycache__/syncer.cpython-310.pyc /home/dev/ws/kuksa-syncer/syncer.pyc \
+    #&& find /home/dev/ws/kuksa-syncer/ -mindepth 1 ! -name 'syncer.pyc' ! -name 'subpiper' ! -path '/home/dev/ws/kuksa-syncer/subpiper/*' -delete
 
-# Copy Kit-Manager files
-COPY --chown=dev:sdvr Kit-Manager/package*.json /home/dev/ws/kit-manager/
-COPY --chown=dev:sdvr Kit-Manager/configs.js /home/dev/ws/kit-manager/
-COPY --chown=dev:sdvr Kit-Manager/src /home/dev/ws/kit-manager/src
-
-# Set user and environment
 USER dev
 
-ENV KUKSA_DATABROKER_ADDR=127.0.0.1
+ENV ENVIRONMENT="prototype"
+ENV ARCH=$TARGETARCH
+ENV USERNAME="dev"
+ENV KUKSA_DATABROKER_ADDR=0.0.0.0
 ENV KUKSA_DATABROKER_PORT=55555
+ENV KIT_MANAGER_PORT=3090
 ENV KUKSA_DATABROKER_METADATA_FILE=/home/dev/ws/vss.json
-EXPOSE $KUKSA_DATABROKER_PORT 1883
+EXPOSE $KUKSA_DATABROKER_PORT $KIT_MANAGER_PORT
+
+RUN mkdir /home/dev/data
+RUN chown -R dev /home/dev/data
+RUN chmod -R 777 /home/dev/data
 
 WORKDIR /home/dev/
 
